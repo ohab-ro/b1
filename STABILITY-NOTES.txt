@@ -1,0 +1,211 @@
+OhabTech Host Webkit - Stable r4
+================================
+File-by-file technical notes. Base = the uploaded "OhabTech Host Webkit-PS4l.zip".
+
+Principle applied everywhere:
+  * The exploit chains are NOT re-timed and NO offset/patch was altered.
+  * Every chain change is additive (stage reporting) or defensive (validation,
+    no blocking modal, no unbounded DOM). Nothing changes what the exploit does.
+  * The orchestration layer (index.html) was rewritten; it decides WHEN a chain
+    runs and whether a failure may be retried.
+
+
+index.html .............................. REWRITTEN (orchestrator, r4-stable)
+reset.html .............................. NEW
+ohabtech-host.manifest .................. cleaned (cache correctness)
+505/700/900/css/slopkit .manifest ....... cleaned (cache correctness)
+cache505/700/900/css/slopkit.html ....... inlined <style> (was ../style.css)
+700/alert.js, 900/alert.js .............. alert() removed, errors classified
+700/psfree.js, 900/psfree.js ............ 2 stage hooks each
+700/lapse.js, 900/lapse.js .............. stage hooks, already-loaded report,
+                                          payload magic check, delayed munmap
+700/module/utils.js, 900/module/utils.js   bounded hidden log + host forwarding
+css/misc.js ............................. logger verbose off by default (opt-in)
+                                          bounded log + host forwarding
+css/main.js ............................. stage hooks, already-loaded report,
+                                          payload magic check, success report
+505/exploit.js .......................... stage hooks, live-path alert() removed,
+                                          payload magic check, success report
+slopkit/jb.js, chain_lapse.js, chain_poops.js   reporting bridge (__ohabSlopForward)
+                                          driven from the existing mark()
+
+
+-------------------------------------------------------------------------------
+1. index.html  (rewritten)
+-------------------------------------------------------------------------------
+Why: the old page treated AppCache as a hard gate ("no cache -> no exploit"),
+marked ANY error as terminal with no retry, auto-started 650 ms after the cache
+event, and had no protection against two tabs running the same exploit.
+
+New behaviour
+  * Preflight before anything else: GET goldhen_2.4b18.12.bin and, when the
+    route has one, the kpatch blob (css/ps4/patches/*.bin, slopkit/patches/*.bin).
+    Missing/short file -> clear Arabic message, nothing is injected.
+  * AppCache is an optimisation, never a gate: status 1/2 -> offline ready,
+    anything else -> try update, but start in "network mode" after at most 45 s.
+    ?nocache=1 skips it entirely.
+  * Route table with an explicit "verified" version list per route. A firmware
+    inside a family but WITHOUT its own offsets table (10.01 / 10.70 / 10.71)
+    no longer auto-starts: red warning + manual start only.
+  * Stage machine: prep -> webkit -> kernel -> payload. Fed by the chain hooks
+    and, as a fallback, by a narrow heuristic on the #msgs text.
+  * Retry policy: safe page-reload retry only while the kernel has not been
+    touched; after the kernel stage the page never reloads itself (reboot
+    instruction instead). Counter lives in sessionStorage (ohab_v4_attempt).
+  * Single-tab guard: localStorage heartbeat (ohab_v4_active, 2 s interval);
+    a second tab refuses to start instead of corrupting the same kernel.
+  * Error handling: no alert() anywhere, resource errors (failed <img>/<link>)
+    are ignored, chain errors are classified by stage. A "REBOOT-REQUIRED" /
+    "DANGLING" note from a chain immediately becomes a terminal state.
+  * Watchdog is informative only (never aborts a running exploit): it warns at
+    90 s and 240 s in the current stage and tells the user what to do.
+  * UI: real progress bar, 4 stage chips, attempt counter, live log (600 lines),
+    Reset button, Reload button, firmware matrix highlighting.
+  * Params: autostart, retry, debug, nocache, route.
+
+Host API provided to the chains (all optional from the chain side):
+    window.__ohabTechHostStage(stage, detail)
+    window.__ohabTechHostSuccess(detail)
+    window.__ohabTechHostFailure(reason, stage)
+    window.__ohabTechHostNote(text)          <- throttled + de-duplicated
+
+Verified by tests/host_smoke_test.js (70 assertions, stubbed DOM + fake clock):
+routing for all 14 verified firmwares, module/no-module flag, refusal of
+13.01/11.30/12.30, refusal of a PC browser, unverified-firmware consent flow,
+preflight failure, cache-error fallback, pre-kernel retry, post-kernel hard stop,
+success lock, second-tab guard, retry-cap give-up.
+
+
+-------------------------------------------------------------------------------
+2. Cache / manifests  (the silent "sometimes it never starts" bug)
+-------------------------------------------------------------------------------
+  * 505/700/900/css/slopkit .manifest listed "../img.jpg" and "../style.css",
+    neither of which exists in the package. AppCache requires EVERY CACHE entry
+    to download: one 404 fails the whole install, which is exactly the
+    "Cache: unavailable -> host refuses to run" symptom. Both entries removed.
+  * ohabtech-host.manifest listed "index.html?autostart=0"; a query-string entry
+    can 404 on minimal static servers with the same fatal effect. Removed.
+  * reset.html added to the cache.
+  * A version line ("# OhabTech Host Webkit r4-stable") was added to every
+    manifest so a deployed client invalidates its old offline cache once.
+  * cache505/700/900/css/slopkit.html linked "../style.css" (above the host
+    root). Replaced by an inline stylesheet, so the package is self-contained
+    and can be served from any path.
+  * Verified: every CACHE entry of every manifest exists on disk.
+
+
+-------------------------------------------------------------------------------
+3. 700/alert.js + 900/alert.js
+-------------------------------------------------------------------------------
+  * alert() removed from reportError() - a blocking modal on the PS4 browser
+    looks exactly like a frozen console and it wastes the timing window the
+    race needs.
+  * Errors are written to the hidden #console (bounded to 600 nodes) and
+    forwarded to the host as a "webkit" stage failure, which allows the host's
+    safe reload retry. Resource errors (event.target + no message) are ignored.
+  * Module-load failure keeps calling window.__ohabTechHostFailure as before.
+
+
+-------------------------------------------------------------------------------
+4. 700/module/utils.js + 900/module/utils.js
+-------------------------------------------------------------------------------
+  * log(): the hidden #console element grew without any limit (a real memory/GC
+    factor during the spray loops). Now trimmed to the last 600 nodes.
+  * log() also forwards the line to window.__ohabTechHostNote; the host
+    rate-limits (120 ms, de-duplicated, 400 lines max) so this stays cheap.
+
+
+-------------------------------------------------------------------------------
+5. 700/psfree.js + 900/psfree.js
+-------------------------------------------------------------------------------
+  * Added __ohabStage() helper and two hooks: "webkit / UAF SSV" at the start of
+    main() and "webkit / ARW achieved" after make_arw(). Nothing else touched.
+
+
+-------------------------------------------------------------------------------
+6. 700/lapse.js + 900/lapse.js
+-------------------------------------------------------------------------------
+  * "GoldHEN is Already Loaded" branch reported to the host. It used to return a
+    never-resolving promise with no signal at all, so the page looked hung for
+    the whole watchdog window.
+  * Explicit kernel-stage hook placed after the already-loaded check, i.e. the
+    true "kernel may become dirty from here" boundary.
+  * Payload-stage hook after the kernel patch succeeded.
+  * runPayload(): refuses to jump into a blob that is not a GoldHEN loader
+    (first byte 0xE9). Previously only "length >= 4" was checked, so a truncated
+    or wrong file was executed at CPL0.
+  * 700 only: the munmap of the payload buffer was moved into a 2000 ms timeout
+    instead of running in the same tick that created the loader thread
+    (blackscreen/reboot runs). 900 maps a stub and does not munmap.
+  * Success now also calls window.__ohabTechHostSuccess.
+
+
+-------------------------------------------------------------------------------
+7. css/misc.js
+-------------------------------------------------------------------------------
+  * logger.verbose was hardcoded true -> every debug line went into a hidden DOM
+    node during the race phase. Now off unless ?debug=1 (or ?verbose=1), and the
+    element is trimmed to the last 600 nodes.
+  * Lines are forwarded to window.__ohabTechHostNote.
+
+
+-------------------------------------------------------------------------------
+8. css/main.js
+-------------------------------------------------------------------------------
+  * Stage hooks: "webkit / css fontface userland", "kernel / css <chain>" placed
+    right before loading css/lapse.js, "payload" around load_bin(), and an
+    explicit already-loaded report.
+  * load_bin() is now guarded by the same 0xE9 payload check.
+  * Success calls window.__ohabTechHostSuccess.
+
+
+-------------------------------------------------------------------------------
+9. 505/exploit.js
+-------------------------------------------------------------------------------
+  * Added __ohab505Stage / __ohab505Warn / __ohab505Fail helpers.
+  * Live-path alerts converted to non-blocking host notes:
+    "Error XHR", "Bad webKitBase", "Bad libSceLibcInternalBase",
+    "Bad libKernelBase", "no gadgetcache", "userland ROP execution not working",
+    plus the two alert(e) catches in stage2()/runBinloader().
+    (The alert() calls inside window.try_dlsym / try_sys_* debug helpers were
+    left alone - they are not on the execution path.)
+  * The kernel-stage hook is placed immediately before
+    kernExploit_bpf_double_free(), so the pre-kernel offset checks stay in the
+    retryable "webkit" class.
+  * Payload blob validated (0xE9) before the mmap/p.fcall sequence, and the
+    success path reports to the host.
+  * The already-loaded branch reports "already-loaded" to the host.
+
+
+-------------------------------------------------------------------------------
+10. slopkit/jb.js, chain_lapse.js, chain_poops.js
+-------------------------------------------------------------------------------
+  * These builds already carry their own instrumentation (mark/PROOF-*/VERDICT),
+    a bounded log and a read-phase retry. Nothing of that was changed.
+  * Added __ohabSlopForward(tag, raw) and wired it into mark(), hostOk() and the
+    already-loaded branch. Mapping:
+        PRIMITIVE-OK / PAIR-STATUS / BASES   -> webkit
+        KRW-VERDICT / JB-ROOT / KERNEL-PATCHED / KEXEC -> kernel
+        PAYLOAD-RUN / PAYLOAD-RUNNING        -> payload
+        ALREADY-ROOT                         -> already-loaded
+        DANGLING / VERDICT / REBOOT-REQUIRED / COMMITTED
+                                             -> kernel + REBOOT-REQUIRED note
+  * hostOk() additionally calls window.__ohabTechHostSuccess.
+  * The host detects the slopkit read-retry counter (jb1352-read-retry) and
+    restarts in 1 s instead of running its own countdown, so the two retry
+    mechanisms do not fight each other.
+
+
+-------------------------------------------------------------------------------
+Known limitations (honest list)
+-------------------------------------------------------------------------------
+  * Nothing here was executed on real PS4 hardware in this session. The chain
+    changes are additive/defensive, but only your console can confirm them.
+  * 10.01 / 10.70 / 10.71 have no dedicated offsets table in this package; they
+    now require an explicit manual start and may still fail.
+  * 11.03-11.49, 12.03-12.49 and 13.01 remain unrouted by design.
+  * A kernel exploit that double-frees kernel memory can still take the console
+    down; that risk is inherent to the chain, not to the host. The r4 host makes
+    every failure state explicit and prevents the two failure modes that were
+    under the host's control (retry after a dirty kernel, and a cache/UI dead
+    end).

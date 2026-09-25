@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" manifest="slopkit.manifest">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OhabTech | Offline Cache</title>
+<style>
+body{background:#080b18;color:#edf3ff;font-family:"Segoe UI",Arial,sans-serif;text-align:center;padding:40px 12px}
+h1{font-size:22px;margin:6px 0;color:#fff}
+.shell{max-width:760px;margin:0 auto}
+.section-title{font-size:15px;color:#8deaff;font-weight:600}
+.notice{background:rgba(66,48,16,.34);border:1px solid rgba(255,210,122,.32);border-radius:10px;padding:10px;color:#ffe3a1;font-size:13px}
+.footer{color:#7184a5;font-size:12px;margin-top:18px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <h1>OhabTech PS4 GoldHEN Multi Host r7</h1>
+  <h2 class="section-title">Preparing offline resources</h2>
+  <h1 id="msgs" style="font-size:22px;">Starting cache installation...</h1>
+  <p class="notice">Keep this page open until the cache is ready. The exploit will not start from this page.</p>
+  <p class="footer">OhabTech offline cache bootstrap</p>
+</div>
+<script>
+(function () {
+    "use strict";
+    var messages = document.getElementById("msgs");
+    var status = window.applicationCache ? Number(window.applicationCache.status) : -1;
+    var hadUsableCache = status === 1 || status === 2;
+    var returning = false;
+    var failed = false;
+
+    function setStatus(text, color) {
+        if (!messages) return;
+        messages.textContent = text;
+        if (color) messages.style.color = color;
+    }
+
+    function returnToHost(message) {
+        if (returning || failed) return;
+        returning = true;
+        setStatus(message || "Cache ready. Returning to OhabTech...", "#7ef9c3");
+        setTimeout(function () {
+            window.location.replace("index.html");
+        }, 1200);
+    }
+
+    function cacheFailed() {
+        if (returning || failed) return;
+        if (hadUsableCache) {
+            returnToHost("Existing offline cache found. Returning to OhabTech...");
+            return;
+        }
+        failed = true;
+        setStatus("Cache installation failed. Close the browser, clear its site data, and try again.", "#ff9c91");
+    }
+
+    if (!window.applicationCache) {
+        cacheFailed();
+        return;
+    }
+
+    var cache = window.applicationCache;
+    cache.onprogress = function (event) {
+        if (event.lengthComputable && event.total > 0) {
+            var percent = Math.round((event.loaded / event.total) * 100);
+            setStatus("Installing offline cache: " + percent + "%", "#ffe09a");
+        } else {
+            setStatus("Installing offline cache...", "#ffe09a");
+        }
+    };
+    cache.oncached = function () {
+        returnToHost();
+    };
+    cache.onnoupdate = function () {
+        returnToHost("Offline cache is up to date. Returning to OhabTech...");
+    };
+    function activateUpdate() {
+        if (!cache.swapCache) return false;
+        try {
+            cache.swapCache();
+            return true;
+        } catch (ignore) {
+            return false;
+        }
+    }
+    function handleUpdateReady() {
+        if (activateUpdate()) {
+            returnToHost("Cache update installed. Returning to OhabTech...");
+        } else if (hadUsableCache) {
+            returnToHost("Cache update could not be activated; the existing cache remains available.");
+        } else {
+            cacheFailed();
+        }
+    }
+    cache.onupdateready = handleUpdateReady;
+    cache.onerror = cacheFailed;
+
+    if (status === 4) {
+        handleUpdateReady();
+    } else {
+        setStatus(status === 1 || status === 2 ? "Checking the offline cache..." : "Installing offline cache. Keep this page open...", "#ffe09a");
+        try {
+            cache.update();
+        } catch (ignore3) {
+            cacheFailed();
+        }
+    }
+}());
+</script>
+</body>
+</html>

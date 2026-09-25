@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" manifest="ohabtech-host.manifest">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#080b18">
+<meta name="description" content="OhabTech Host Webkit Final - GoldHEN multi-firmware host (stability build)">
+<title>OhabTech Host Webkit Final | GoldHEN Multi</title>
+<style>
+html,body{min-height:100%;background:#0a0a09;color:#f2ead7}
+html{background:#0a0a09}
+body{margin:0;padding:0 0 34px;overflow-x:hidden;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.4;text-align:center;background:
+radial-gradient(circle at 50% -10%,rgba(255,170,50,.10),transparent 38%),
+linear-gradient(180deg,#11100d 0%,#0b0b0a 48%,#070707 100%)}
+*{-webkit-box-sizing:border-box;box-sizing:border-box}
+button{font-family:inherit}
+#console{position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;opacity:0}
+.page{width:94%;max-width:1180px;margin:0 auto;position:relative}
+.hero{padding:24px 8px 12px;text-align:left;border-bottom:1px solid #302a20}
+.eyebrow{display:inline-block;padding:4px 9px;border-left:3px solid #e0a13a;color:#d7c08e;background:#15130f;font:700 10px/1.2 "Courier New",monospace;letter-spacing:1px}
+h1{margin:10px 0 2px;color:#fff6df;font-size:34px;font-weight:800;letter-spacing:-1px}
+h1 span{color:#e0a13a}
+h2{margin:0 0 7px;color:#f6eddc;font-size:18px;font-weight:700}
+p{margin:6px auto}.subtitle{max-width:850px;margin-left:0;color:#9f9788;font-size:13px}.hero-note{color:#746d60;font:12px "Courier New",monospace}
+.status-panel{width:100%;margin:12px auto 14px;padding:12px 15px;border:1px solid #383126;border-left:4px solid #e0a13a;background:#11100d;text-align:left;box-shadow:0 10px 25px rgba(0,0,0,.35)}
+.status-line{min-height:27px;color:#eee4cf;font:700 17px/1.5 "Courier New",monospace}.status-line.ok{color:#b8e3a2}.status-line.warn{color:#e5c37a}.status-line.bad{color:#e09a8d}
+.status-sub{min-height:22px;color:#8e877b;font:12px "Courier New",monospace}
+.pulse{display:inline-block;width:8px;height:8px;margin-left:7px;border-radius:50%;background:#e0a13a;vertical-align:1px}.pulse.waiting{background:#e0a13a;box-shadow:0 0 9px #e0a13a}.pulse.stopped{background:#c96f63;box-shadow:0 0 9px #c96f63}
+.layout{width:100%;margin:0}
+.card{display:inline-block;vertical-align:top;width:49.2%;margin:0 .4% 12px;padding:16px;border:1px solid #302b24;background:#11110f;text-align:left;box-shadow:0 8px 22px rgba(0,0,0,.24)}
+.card.full{display:block;width:99.2%;margin-right:.4%;margin-left:.4%}
+.card-kicker{margin:0 0 6px;color:#887b67;font:700 10px "Courier New",monospace;letter-spacing:1px}
+.machine{display:inline-block;min-width:135px;margin:0 0 9px;padding:6px 10px;border:1px solid #55462e;background:#17140e;color:#d8b66d;font:700 12px "Courier New",monospace}.machine.unsupported{border-color:#75453e;background:#1c100e;color:#dc9588}.machine.warn{border-color:#69542f;color:#dcb96f}
+.info{color:#aaa193;font-size:13px}
+.progress-track{width:100%;height:6px;margin:12px 0 9px;overflow:hidden;background:#080808;border:1px solid #302b24}
+.progress-bar{width:0;height:100%;background:#e0a13a;box-shadow:0 0 10px rgba(224,161,58,.45);transition:width .25s ease}
+.stages{margin:4px 0}.stage{display:inline-block;margin:2px 3px 2px 0;padding:4px 8px;border:1px solid #353027;background:#0b0b0a;color:#625d54;font:700 10px "Courier New",monospace}.stage.active{border-color:#e0a13a;color:#e0a13a}.stage.done{border-color:#657a57;color:#9fc58c}.stage.fail{border-color:#8a4f47;color:#d98e82}
+.controls{margin:9px 0 5px;text-align:left}.btn{display:inline-block;min-width:160px;min-height:42px;margin:3px 4px 3px 0;padding:9px 14px;border:1px solid #564a38;border-radius:2px;background:#191713;color:#eee4cf;font-size:13px;font-weight:700;cursor:pointer;box-shadow:inset 0 1px rgba(255,255,255,.04)}.btn:hover{border-color:#e0a13a;color:#fff6df}.btn:active{transform:translateY(1px)}.btn:disabled{border-color:#292621;background:#11100e;color:#57524a;cursor:default}.btn-primary{border-color:#b77f29;background:#8a5d18;color:#fff1c9}.btn-primary:hover{background:#a16e20}.btn-reload{display:none}.btn-reset{border-color:#70433c;color:#d5a096}
+.notice{margin:10px 0 0;padding:9px 10px;border:1px solid #4c3d27;background:#17130d;color:#cbb98f;font-size:12px;text-align:left}.notice.bad{border-color:#65423c;background:#180f0d;color:#d9a198}.notice.ok{border-color:#4d6445;background:#10150f;color:#a9c99a}
+.cache-row{margin:7px 0 0;color:#777065;font:11px "Courier New",monospace}.cache-row strong{color:#aaa08f}
+.firmware-grid{margin:9px -3px 0}.fw{display:inline-block;width:31.7%;min-height:41px;margin:3px .5%;padding:7px 5px;border:1px solid #302b24;background:#0d0d0c;color:#b4aa9a;font:700 12px "Courier New",monospace;vertical-align:middle}.fw em{display:block;color:#696258;font-size:9px;font-style:normal;font-weight:400}.fw.here{border-color:#e0a13a;background:#17130d;color:#f0cf8b}.fw.here em{color:#a9894d}
+.gap-note{margin-top:10px;padding:8px 9px;border-left:3px solid #6e4b26;background:#15110c;color:#8e806b;font-size:11px}
+#out{display:block;width:100%;max-height:260px;min-height:125px;margin:8px 0 0;padding:10px;overflow:auto;border:1px solid #302b24;background:#070706;color:#a8a092;font:11px/1.5 "Courier New",monospace;direction:ltr;text-align:left;white-space:pre-wrap;word-wrap:break-word}
+#out .ok,.state.ok{color:#a9c99a}#out .warn,.state.warn{color:#d8b66d}#out .bad,.state.bad{color:#d98e82}
+.state{min-height:21px;margin-top:4px;color:#a9a094;font-size:12px}.message-strip{min-height:18px;margin-top:5px;color:#716b61;font:11px "Courier New",monospace}
+.footer{margin:14px 0 0;color:#5e594f;font-size:10px}.footer a{color:#b58a45;text-decoration:none}.small{color:#696258;font-size:11px}
+.rules{margin:7px 0 0;padding-right:18px;color:#91897c;font-size:12px}.rules li{margin:3px 0}#msgs{min-height:0}#firmware{color:#b9ad98}#msgs2,#msgs3{margin-left:10px}
+@media(max-width:760px){h1{font-size:28px}.card{display:block;width:99.2%;margin-right:.4%;margin-left:.4%}.fw{width:47.5%}}
+@media(max-width:470px){.fw{width:92%}.btn{display:block;width:100%;margin-right:0}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="hero">
+<div class="eyebrow">OHABTECH // PS4 WEBKIT HOST // STABLE BUILD</div>
+<h1>OhabTech <span>Control Deck</span></h1>
+<p class="subtitle">مركز تشغيل خفيف لـ GoldHEN. كشف الإصدار، فحص الملفات، وحالة السلسلة في شاشة واحدة.</p>
+<p class="hero-note">لا تعِد تحميل الصفحة أثناء التنفيذ. تبويب واحد فقط.</p>
+</header>
+
+<section class="status-panel" aria-live="polite">
+<div class="status-line" id="statusLine"><span class="pulse waiting" id="statusDot"></span><span id="msgs">تهيئة الهوست...</span></div>
+<div class="status-sub" id="firmware">جاري كشف إصدار النظام...</div>
+<div class="message-strip"><span id="msgs2"></span><span id="msgs3"></span></div>
+</section>
+
+<main class="layout" id="menu">
+<section class="card" id="run-card">
+<div class="card-kicker">PRIMARY OPERATION</div>
+<h2>تشغيل GoldHEN</h2>
+<div class="machine" id="machine">CHECKING</div>
+<p class="info" id="state">في انتظار الفحص...</p>
+<div class="progress-track" id="progress"><div class="progress-bar" id="progressBar"></div></div>
+<div class="stages">
+<span class="stage" id="st-prep">PREP</span>
+<span class="stage" id="st-webkit">WEBKIT</span>
+<span class="stage" id="st-kernel">KERNEL</span>
+<span class="stage" id="st-payload">PAYLOAD</span>
+</div>
+<div class="controls">
+<button class="btn btn-primary" id="startButton" type="button" disabled>انتظار الفحص</button>
+<button class="btn btn-reload" id="reloadButton" type="button">إعادة التحميل</button>
+<button class="btn btn-reset" id="resetButton" type="button">مسح الحالة</button>
+</div>
+<div class="cache-row" id="cacheRow"><strong>CACHE:</strong> unknown</div>
+<div class="notice" id="notice">سيبدأ التشغيل تلقائيًا بعد اكتمال الفحص عندما يكون الإصدار مدعومًا.</div>
+</section>
+
+<section class="card">
+<div class="card-kicker">FIRMWARE MAP</div>
+<h2>المسارات المتاحة</h2>
+<div class="firmware-grid">
+<div class="fw">5.05 / 5.07<em>Classic</em></div>
+<div class="fw">7.00 - 8.52<em>Lapse</em></div>
+<div class="fw">9.00 - 9.60<em>Lapse</em></div>
+<div class="fw">10.00 - 11.02<em>CSS</em></div>
+<div class="fw">11.50 - 12.02<em>Slopkit Lapse</em></div>
+<div class="fw">12.50 - 13.00<em>Slopkit Poops</em></div>
+<div class="fw">13.02 - 13.52<em>Slopkit JB</em></div>
+</div>
+<div class="gap-note">يتم منع أي إصدار لا يملك جدولًا صريحًا داخل الحزمة. هذا يمنع تشغيل offsets تقريبية قد تسبب عدم استقرار.</div>
+</section>
+
+<section class="card">
+<div class="card-kicker">SAFE USE</div>
+<h2>قبل التشغيل</h2>
+<ul class="rules">
+<li>ابدأ من جلسة متصفح جديدة.</li>
+<li>استخدم تبويبًا واحدًا فقط.</li>
+<li>لا تضغط Reload أثناء السلسلة.</li>
+<li>بعد لمس النواة، فشل المحاولة يعني إعادة تشغيل الجهاز قبل محاولة جديدة.</li>
+</ul>
+</section>
+
+<section class="card full">
+<div class="card-kicker">TELEMETRY</div>
+<h2>سجل التشغيل</h2>
+<pre id="out" aria-live="polite"></pre>
+</section>
+</main>
+<p class="footer">OhabTech Host Webkit · GoldHEN Multi FW · PSFree / Lapse / CSSFontFace / slopkit credits preserved.</p>
+<p class="footer small"><a href="reset.html">Reset page</a> · للاستخدام على جهازك وعلى مسؤوليتك.</p>
+</div>
+<script>
+(function () {
+    "use strict";
+
+    /* =====================================================================
+       OhabTech Host Webkit - Stability r7  (orchestration layer)
+
+       This file only controls *when* and *how* a chain is launched:
+       preflight, cache, single-tab guard, stage reporting, safe retry.
+       The exploit chains are untouched except for additive hooks that call
+       window.__ohabTechHostStage / Success / Failure / Note.
+       ===================================================================== */
+
+    var HOST_VERSION = "Final-Stable";
+
+    function param(name, dflt) {
+        var m = new RegExp("[?&]" + name + "=([^&#]*)").exec(location.search || "");
+        return m ? decodeURIComponent(m[1]) : dflt;
+    }
+
+    var OPT = {
+        autostart: param("autostart", "1") !== "0",
+        maxRetry: (function () {
+            var n = parseInt(param("retry", "2"), 10);
+            if (isNaN(n) || n < 0) n = 2;
+            if (n > 5) n = 5;
+            return n;
+        })(),
+        debug: param("debug", "0") === "1",
+        nocache: param("nocache", "0") === "1",
+        route: param("route", "")
+    };
+
+    /* ---------------- storage (PS4 WebKit can throw) ---------------- */
+    function openStore(kind) {
+        try {
+            var s = window[kind];
+            s.setItem("__ohab_probe", "1");
+            s.removeItem("__ohab_probe");
+            return s;
+        } catch (e) {
+            return null;
+        }
+    }
+    var SS = openStore("sessionStorage");
+    var LS = openStore("localStorage");
+    function sGet(s, k) { try { return s ? s.getItem(k) : null; } catch (e) { return null; } }
+    function sSet(s, k, v) { try { if (s) s.setItem(k, String(v)); } catch (e) {} }
+    function sDel(s, k) { try { if (s) s.removeItem(k); } catch (e) {} }
+
+    var K_ATTEMPT = "ohab_v4_attempt";
+    var K_RAN = "ohab_v4_ran";
+    var K_ACTIVE = "ohab_v4_active";
+    var K_SLOPKIT_RETRY = "jb1352-read-retry"; // owned by slopkit/jb.js
+    var K_SWAPPED = "ohab_v4_swapped";
+
+    var DOC_ID = String(Date.now()) + "-" + String(Math.random()).slice(2, 8);
+
+    /* ---------------- DOM ---------------- */
+    function byId(id) { return document.getElementById(id); }
+    var msgs = byId("msgs");
+    var msgs2 = byId("msgs2");
+    var msgs3 = byId("msgs3");
+    var firmwareEl = byId("firmware");
+    var stateEl = byId("state");
+    var outEl = byId("out");
+    var machineEl = byId("machine");
+    var cacheRow = byId("cacheRow");
+    var noticeEl = byId("notice");
+    var startButton = byId("startButton");
+    var reloadButton = byId("reloadButton");
+    var resetButton = byId("resetButton");
+    var progressBar = byId("progressBar");
+    var statusDot = byId("statusDot");
+    var stageEls = { prep: byId("st-prep"), webkit: byId("st-webkit"), kernel: byId("st-kernel"), payload: byId("st-payload") };
+
+    function setText(el, t) { if (el) el.textContent = t == null ? "" : String(t); }
+    function setMessage(text, tone) {
+        setText(msgs, text);
+        var line = byId("statusLine");
+        if (line) line.className = "status-line" + (tone ? " " + tone : "");
+        if (statusDot) statusDot.className = "pulse" + (tone === "bad" ? " stopped" : (tone === "warn" ? " waiting" : ""));
+    }
+    function setPhase(text, tone) { setText(stateEl, text); if (stateEl) stateEl.className = tone || ""; }
+    function setNotice(text, tone) {
+        if (!noticeEl) return;
+        noticeEl.textContent = text;
+        noticeEl.className = "notice" + (tone ? " " + tone : "");
+    }
+    function setProgress(p) {
+        var n = Number(p);
+        if (isNaN(n) || n < 0) n = 0;
+        if (n > 100) n = 100;
+        if (progressBar) progressBar.style.width = n + "%";
+    }
+    var logBuffer = [];
+    var logFlushTimer = 0;
+    function flushLogs() {
+        logFlushTimer = 0;
+        if (!outEl || !logBuffer.length) return;
+        var frag = document.createDocumentFragment();
+        for (var i = 0; i < logBuffer.length; i++) {
+            var item = logBuffer[i];
+            var span = document.createElement("span");
+            if (item.tone) span.className = item.tone;
+            span.textContent = item.text;
+            frag.appendChild(span);
+        }
+        logBuffer = [];
+        outEl.appendChild(frag);
+        while (outEl.childNodes.length > 260 && outEl.firstChild) outEl.removeChild(outEl.firstChild);
+        outEl.scrollTop = outEl.scrollHeight;
+    }
+    function addLog(line, tone) {
+        if (!outEl) return;
+        logBuffer.push({ text: String(line == null ? "" : line) + "\n", tone: tone || "" });
+        if (logBuffer.length > 40) flushLogs();
+        else if (!logFlushTimer) logFlushTimer = setTimeout(flushLogs, 70);
+    }
+    function logLine(tag, detail, tone) {
+        addLog("[" + tag + "] " + (detail == null ? "" : detail), tone);
+    }
+
+    /* ---------------- host API used by the chains ---------------- */
+    var hostNoteCount = 0;
+    var hostNoteLast = 0;
+    var lastNoteText = "";
+
+    window.__ohabTechHostStage = function (stage, detail) {
+        // Some routes intentionally keep their exploit promise pending after
+        // detecting an already-patched kernel. Treat that explicit signal as a
+        // terminal host state instead of waiting for the watchdog.
+        if (stage === "payload" && /already-loaded/i.test(String(detail || ""))) {
+            onAlready(detail || "already-loaded");
+            return;
+        }
+        advanceStage(stage, detail);
+    };
+    window.__ohabTechHostNote = function (text) {
+        // chains call log() a lot; throttle + de-duplicate so the DOM stays cheap
+        var now = Date.now();
+        var t = String(text == null ? "" : text);
+        if (t === lastNoteText) return;
+        if (now - hostNoteLast < 120) return;
+        hostNoteLast = now;
+        lastNoteText = t;
+        hostNoteCount++;
+        if (hostNoteCount > 400) return;
+        logLine("chain", t.slice(0, 400));
+        // a chain that reports a dirty kernel must never be retried by reload
+        if (/REBOOT-REQUIRED|DANGLING|rebootRequired/i.test(t)) {
+            kernelTouched = true;
+            if (!finished) {
+                logLine("chain", "السلسلة تطلب إعادة تشغيل الجهاز — لا إعادة محاولة", "bad");
+                fail("السلسلة تبلّغ أن حالة النواة غير سليمة ويجب إعادة تشغيل الجهاز", false, "bad");
+            }
+            return;
+        }
+        advanceStage(null, t);
+    };
+    window.__ohabTechHostSuccess = function (detail) { onSuccess(detail || "host success hook"); };
+    window.__ohabTechHostFailure = function (reason, stage) { onChainFailure(reason || "chain stopped unexpectedly", stage); };
+
+    /* ---------------- routes + firmware tables ---------------- */
+    // exact  = firmware with its own verified offsets table in this build
+    // family = same route, but the firmware is not in its own table
+    var ROUTES = [
+        {
+            kind: "505", name: "5.05 / 5.07", src: "505/exploit.js", module: false,
+            exact: [5.05, 5.07],
+            familyMin: 5.00, familyMax: 5.07,
+            payload: "goldhen_2.4b18.12.bin"
+        },
+        {
+            kind: "700", name: "7.00 - 8.52", src: "700/alert.js", module: true,
+            exact: [7.00, 7.01, 7.02, 7.50, 7.51, 7.55, 8.00, 8.01, 8.03, 8.50, 8.52],
+            familyMin: 7.00, familyMax: 8.52,
+            payload: "goldhen_2.4b18.12.bin"
+        },
+        {
+            kind: "900", name: "9.00 - 9.60", src: "900/alert.js", module: true,
+            exact: [9.00, 9.03, 9.04, 9.50, 9.51, 9.60],
+            familyMin: 9.00, familyMax: 9.60,
+            payload: "goldhen_2.4b18.12.bin"
+        },
+        {
+            kind: "css", name: "10.00 - 11.02", src: "css/main.js", module: false,
+            exact: [10.00, 10.50, 11.00, 11.02],
+            familyMin: 10.00, familyMax: 11.02,
+            payload: "goldhen_2.4b18.12.bin"
+        },
+        {
+            kind: "slopkit", name: "11.50 - 12.02", src: "slopkit/chain_lapse.js", module: true,
+            exact: [11.50, 11.52, 12.00, 12.02],
+            familyMin: 11.50, familyMax: 12.02,
+            payload: "goldhen_2.4b18.12.bin"
+        },
+        {
+            kind: "slopkit", name: "12.50 - 13.00", src: "slopkit/chain_poops.js", module: true,
+            exact: [12.50, 12.52, 13.00],
+            familyMin: 12.50, familyMax: 13.00,
+            payload: "goldhen_2.4b18.12.bin"
+        },
+        {
+            kind: "slopkit", name: "13.02 - 13.52", src: "slopkit/jb.js", module: true,
+            exact: [13.02, 13.04, 13.50, 13.52],
+            familyMin: 13.02, familyMax: 13.60,
+            payload: "goldhen_2.4b18.12.bin"
+        }
+    ];
+
+    function parseFw(ua) {
+        var m = /PlayStation 4[ /]([0-9]{1,2}\.[0-9]{2})/i.exec(ua || "");
+        if (!m) return null;
+        return { text: m[1], num: parseFloat(m[1]) };
+    }
+
+    function pickRoute(fw, forced) {
+        if (!fw) return null;
+        var list = ROUTES;
+        if (forced) {
+            for (var f = 0; f < list.length; f++) {
+                if (list[f].kind === forced && fw.num >= list[f].familyMin && fw.num <= list[f].familyMax) {
+                    return { route: list[f], exact: indexOfNum(list[f].exact, fw.num) >= 0, forced: true };
+                }
+            }
+        }
+        for (var i = 0; i < list.length; i++) {
+            var r = list[i];
+            if (fw.num >= r.familyMin && fw.num <= r.familyMax) {
+                return { route: r, exact: indexOfNum(r.exact, fw.num) >= 0, forced: false };
+            }
+        }
+        return null;
+    }
+
+    function indexOfNum(arr, n) {
+        for (var i = 0; i < arr.length; i++) if (Math.abs(arr[i] - n) < 0.0001) return i;
+        return -1;
+    }
+
+    /* ---------------- stage tracking ---------------- */
+    var STAGE_ORDER = ["prep", "webkit", "kernel", "payload"];
+    var stage = "prep";
+    var stageTimes = {};
+    var kernelTouched = false;
+    var finished = false;
+    var started = false;
+    var stageProgress = { prep: 20, webkit: 45, kernel: 75, payload: 92 };
+
+    function markStageEl(name, cls) { if (stageEls[name]) stageEls[name].className = "stage" + (cls ? " " + cls : ""); }
+
+    function paintStages() {
+        for (var i = 0; i < STAGE_ORDER.length; i++) {
+            var n = STAGE_ORDER[i];
+            var idx = STAGE_ORDER.indexOf(stage);
+            var cls = "";
+            if (i < idx) cls = "done";
+            if (i === idx) cls = "active";
+            markStageEl(n, cls);
+        }
+    }
+
+    function advanceStage(next, detail) {
+        if (finished) return;
+        if (next) {
+            var i = STAGE_ORDER.indexOf(next);
+            var cur = STAGE_ORDER.indexOf(stage);
+            if (i > cur) {
+                stage = next;
+                stageTimes[stage] = Date.now();
+                if (stage !== "prep" && stage !== "webkit") kernelTouched = true;
+                setProgress(stageProgress[stage] || 20);
+                paintStages();
+                logLine("stage", stage + (detail ? " :: " + detail : ""), "ok");
+                restartWatchdog();
+            } else if (detail) {
+                logLine("stage", stage + " :: " + detail);
+            }
+        }
+        if (detail && !next) {
+            // text heuristic used as a fallback for chains we cannot hook
+            var t = String(detail);
+            // deliberately narrow: a loose /payload/ match would flip the
+            // "kernel was touched" flag on harmless text and block safe retries
+            if (/STAGE: UAF SSV|achieve arbitrary read\/write|USERLAND|---USERLAND---/i.test(t)) advanceStage("webkit", "heuristic");
+            else if (/STAGE: Patch kernel|STAGE: Double free|KRW-VERDICT|JB-ROOT|Root obtained|KERNEL-PATCHED/i.test(t)) advanceStage("kernel", "heuristic");
+            else if (/PAYLOAD-RUN|PAYLOAD-RUNNING|GoldHEN thread|GoldHEN v2\.4[^\n]*Loaded|kernel stage completed, but the payload/i.test(t)) {
+                advanceStage("payload", "heuristic");
+            }
+        }
+    }
+
+    /* ---------------- attempts / retry policy ---------------- */
+    function attemptNo() {
+        var n = parseInt(sGet(SS, K_ATTEMPT) || "0", 10);
+        return isNaN(n) ? 0 : n;
+    }
+    function setAttempt(n) { if (n <= 0) sDel(SS, K_ATTEMPT); else sSet(SS, K_ATTEMPT, n); }
+    function resumeMode() { return attemptNo() > 0; }
+
+    /* ---------------- single tab guard ---------------- */
+    function otherTabAlive() {
+        var raw = sGet(LS, K_ACTIVE);
+        if (!raw) return false;
+        var parts = String(raw).split("|");
+        if (parts.length !== 2) return false;
+        if (parts[0] === DOC_ID) return false;
+        if (Date.now() - Number(parts[1]) > 6000) return false;
+        return true;
+    }
+    var heartbeat = 0;
+    function startHeartbeat() {
+        sSet(LS, K_ACTIVE, DOC_ID + "|" + Date.now());
+        heartbeat = setInterval(function () {
+            if (finished) { sDel(LS, K_ACTIVE); return; }
+            sSet(LS, K_ACTIVE, DOC_ID + "|" + Date.now());
+        }, 2000);
+    }
+    window.addEventListener("pagehide", function () { sDel(LS, K_ACTIVE); }, false);
+
+    /* ---------------- timers ---------------- */
+    var timers = [];
+    function later(fn, ms) { var t = setTimeout(function () { removeTimer(t); fn(); }, ms); timers.push(t); return t; }
+    function every(fn, ms) { var t = setInterval(fn, ms); timers.push(t); return t; }
+    function removeTimer(t) { for (var i = 0; i < timers.length; i++) if (timers[i] === t) { timers.splice(i, 1); return; } }
+    function clearTimers() {
+        for (var i = 0; i < timers.length; i++) { clearTimeout(timers[i]); clearInterval(timers[i]); }
+        timers = [];
+        heartbeat = 0;
+    }
+
+    /* ---------------- preflight ---------------- */
+    var preflight = { payloadSize: -1, ok: false, patch: "", patchSize: -1 };
+
+    // Exact sizes are used only as a corruption/stale-cache guard. They do not
+    // alter exploit timing or patch contents.
+    var EXPECTED_PAYLOAD_BYTES = 293120;
+    var EXPECTED_PATCH_BYTES = {
+        "1000.bin": 589, "1050.bin": 632, "1100.bin": 632, "1102.bin": 632,
+        "1150.bin": 632, "1200.bin": 632, "1250.bin": 314, "1300.bin": 314,
+        "1302.bin": 632, "1350.bin": 632, "1352.bin": 632
+    };
+
+    var CSS_PATCH = { "10.00": "1000.bin", "10.50": "1050.bin", "11.00": "1100.bin", "11.02": "1102.bin" };
+    var SLOP_PATCH = {
+        "11.50": "1150.bin", "11.52": "1150.bin", "12.00": "1200.bin", "12.02": "1200.bin",
+        "12.50": "1250.bin", "12.52": "1250.bin", "13.00": "1300.bin", "13.02": "1302.bin",
+        "13.04": "1302.bin", "13.50": "1350.bin", "13.52": "1352.bin"
+    };
+
+    function head(file, done) {
+        var x = new XMLHttpRequest();
+        var settled = false;
+        function finish(err, size) {
+            if (settled) return;
+            settled = true;
+            done(err, size);
+        }
+        try {
+            x.open("GET", file, true);
+            x.responseType = "arraybuffer";
+            x.timeout = 20000;
+        } catch (e) { finish(e); return; }
+        x.onreadystatechange = function () {
+            if (x.readyState !== 4) return;
+            if (x.status !== 200 || !x.response) { finish(new Error(file + " HTTP " + x.status)); return; }
+            finish(null, x.response.byteLength);
+        };
+        x.onerror = function () { finish(new Error(file + " network error")); };
+        x.ontimeout = function () { finish(new Error(file + " timeout")); };
+        try { x.send(); } catch (e) { finish(e); }
+    }
+
+    function checkFiles(plan, cb) {
+        var queue = [plan.payload];
+        if (plan.kind === "css" && CSS_PATCH[plan.fwText]) queue.push("css/ps4/patches/" + CSS_PATCH[plan.fwText]);
+        if (plan.kind === "slopkit" && SLOP_PATCH[plan.fwText]) queue.push("slopkit/patches/" + SLOP_PATCH[plan.fwText]);
+        var i = 0;
+        (function next() {
+            if (i >= queue.length) { cb(null); return; }
+            var file = queue[i++];
+            head(file, function (err, size) {
+                if (err) { cb("تعذّر قراءة الملف " + file + " (" + (err.message || err) + ")"); return; }
+                if (/goldhen/i.test(file)) {
+                    preflight.payloadSize = size;
+                    if (size !== EXPECTED_PAYLOAD_BYTES) { cb("حجم GoldHEN غير مطابق: " + size + " بدل " + EXPECTED_PAYLOAD_BYTES + " بايت — امسح الكاش ثم أعد نسخ الملف"); return; }
+                } else {
+                    preflight.patch = file;
+                    preflight.patchSize = size;
+                    var patchName = file.slice(file.lastIndexOf("/") + 1);
+                    if (EXPECTED_PATCH_BYTES[patchName] && size !== EXPECTED_PATCH_BYTES[patchName]) {
+                        cb("حجم ملف patch غير مطابق: " + file + " = " + size + " بدل " + EXPECTED_PATCH_BYTES[patchName] + " بايت — امسح الكاش");
+                        return;
+                    }
+                }
+                logLine("preflight", file + " · " + size + " بايت", "ok");
+                next();
+            });
+        })();
+    }
+
+    /* ---------------- cache (never a hard gate) ---------------- */
+    var cache = null;
+    try { cache = window.applicationCache || null; } catch (e) { cache = null; }
+    var cacheReady = false;
+    var cacheVerdict = "unknown";
+
+    function cacheName(status) {
+        if (status === 0) return "UNCACHED";
+        if (status === 1) return "IDLE/usable";
+        if (status === 2) return "CHECKING/usable";
+        if (status === 3) return "UPDATING";
+        if (status === 4) return "UPDATE_READY";
+        if (status === 5) return "OBSOLETE";
+        return "UNAVAILABLE";
+    }
+    function setCacheState(detail) {
+        var status = -1;
+        try { status = cache ? Number(cache.status) : -1; } catch (e) {}
+        var name = cacheName(status);
+        setText(machineEl, "Cache: " + name);
+        if (machineEl) machineEl.className = "machine" + (status === 1 || status === 2 ? "" : " warn");
+        if (cacheRow) cacheRow.innerHTML = "<strong>Offline Cache:</strong> " + name + (detail ? " · " + detail : "");
+    }
+
+    function beginCache(cb) {
+        if (!cache || OPT.nocache) {
+            cacheVerdict = "network";
+            setCacheState(OPT.nocache ? "تجاوز بالطلب" : "غير متاح بهذا WebKit");
+            logLine("cache", "تعذّر استخدام Offline Cache — المتابعة عبر الشبكة", "warn");
+            preflight.cacheFinal = true;
+            cb();
+            return;
+        }
+        var installed = false;
+        var status0 = -1;
+        try { status0 = Number(cache.status); } catch (e) {}
+        setCacheState("");
+        if (status0 === 1 || status0 === 2) {
+            cacheReady = true; cacheVerdict = "offline-ready";
+            logLine("cache", "Offline Cache جاهز مسبقًا", "ok");
+            cb();
+            return;
+        }
+        cache.onprogress = function (ev) {
+            if (ev && ev.lengthComputable && ev.total > 0) {
+                var pct = Math.round((ev.loaded / ev.total) * 100);
+                setCacheState("تنزيل " + pct + "%");
+            }
+        };
+        cache.oncached = function () { cacheReady = true; cacheVerdict = "offline-installed"; setCacheState("جاهز"); done(); };
+        cache.onnoupdate = function () { cacheReady = true; cacheVerdict = "offline-ready"; setCacheState("جاهز"); done(); };
+        cache.onerror = function () {
+            cacheVerdict = "cache-error";
+            setCacheState("فشل — المتابعة عبر الشبكة");
+            logLine("cache", "AppCache فشل (غالبًا ملف ناقص أو 404 داخل المانيفست) — المتابعة عبر الشبكة", "warn");
+            done();
+        };
+        cache.onupdateready = function () {
+            try { cache.swapCache(); } catch (e) {}
+            cacheReady = true; cacheVerdict = "offline-updated";
+            setCacheState("تحديث مثبّت");
+            // Never execute while an AppCache update is pending: doing so can
+            // mix old cached modules with newly fetched resources.
+            if (!sGet(SS, K_SWAPPED)) {
+                sSet(SS, K_SWAPPED, "1");
+                setMessage("تم تحديث ملفات الكاش — إعادة تحميل لتوحيد النسخة", "warn");
+                logLine("cache", "تحديث الكاش جاهز — إعادة تحميل قبل التشغيل", "warn");
+                later(function () { try { location.reload(); } catch (e) {} }, 1000);
+                return;
+            }
+            done();
+        };
+        cache.onobsolete = function () {
+            cacheVerdict = "cache-obsolete";
+            setCacheState("الكاش منتهي — إعادة التحقق");
+            try { cache.update(); } catch (e) { done(); }
+        };
+        var settled = false;
+        function done() {
+            if (settled) return;
+            settled = true;
+            logLine("cache", "النتيجة: " + cacheVerdict);
+            cb();
+        }
+        // Do not continue into exploit execution while AppCache is still
+        // updating. A mixed cache/network resource set is a stability hazard.
+        later(function () {
+            if (!settled) {
+                cacheVerdict = "cache-timeout";
+                setCacheState("مهلة — أعد تحميل الهوست");
+                logLine("cache", "لم يستقر AppCache خلال 60 ثانية — لن يبدأ الاستغلال بنسخة مختلطة", "bad");
+                fail("لم يستقر Offline Cache خلال 60 ثانية؛ أعد تحميل الهوست بدل تشغيل ملفات مختلطة", false, "bad");
+            }
+        }, 60000);
+        if (status0 === 4) {
+            // UPDATE_READY must be activated before exploit resources are used.
+            cache.onupdateready();
+            return;
+        }
+        try { cache.update(); } catch (e) {
+            logLine("cache", "cache.update() رفض التنفيذ — المتابعة عبر الشبكة", "warn");
+            done();
+        }
+    }
+
+    /* ---------------- failure / success handling ---------------- */
+    function disableStart(label) {
+        if (!startButton) return;
+        startButton.disabled = true;
+        startButton.textContent = label || "متوقف";
+    }
+    function showReload() { if (reloadButton) reloadButton.style.display = "inline-block"; }
+
+    function clearRunFlags() {
+        sDel(LS, K_ACTIVE);
+    }
+
+    function onSuccess(detail) {
+        if (finished) return;
+        finished = true;
+        started = false;
+        window.__ohabTechHostStarted = false;
+        clearTimers();
+        setProgress(100);
+        stage = "payload";
+        paintStages();
+        markStageEl("payload", "done");
+        setMessage("GoldHEN v2.4b18.12 Loaded ...", "ok");
+        setPhase("تم — لا تعمل reload ولا تُغلق المتصفح الآن", "ok");
+        setNotice("GoldHEN يعمل الآن. لا تُعد تحميل الصفحة ولا تُشغّل الاستغلال مرة ثانية قبل إعادة تشغيل الجهاز.", "ok");
+        logLine("RESULT", "نجاح: " + detail, "ok");
+        sDel(SS, K_ATTEMPT);
+        sDel(SS, K_SWAPPED);
+        sSet(SS, K_RAN, "1");
+        sSet(LS, K_RAN, "1");
+        sDel(LS, K_ACTIVE);
+        disableStart("GoldHEN يعمل");
+    }
+
+    function onAlready(detail) {
+        if (finished) return;
+        finished = true;
+        started = false;
+        clearTimers();
+        setProgress(100);
+        setMessage("GoldHEN is Already Loaded ...", "warn");
+        setPhase("الجهاز يبلّغ أن GoldHEN محمّل مسبقًا", "warn");
+        setNotice("إذا كان GoldHEN يعمل فعلًا فلا تفعل شيئًا. إذا كان الجهاز بلا GoldHEN فهذه علامة معلّقة: اضغط «Reset حالة الهوست» ثم أعد المحاولة (أو أعد تشغيل الجهاز).", "");
+        logLine("RESULT", "already loaded (" + detail + ")", "warn");
+        sDel(LS, K_ACTIVE);
+        sDel(SS, K_ATTEMPT);
+        disableStart("GoldHEN محمّل مسبقًا");
+    }
+
+    function onChainFailure(reason, reportedStage) {
+        if (finished) return;
+        if (reportedStage) advanceStage(reportedStage, "chain-reported");
+        // If the chain reports kernel/payload explicitly, never permit the
+        // pre-kernel reload path even if the stage hook arrived late.
+        if (reportedStage === "kernel" || reportedStage === "payload") kernelTouched = true;
+        fail(reason, !kernelTouched, null);
+    }
+
+    /**
+     * Central failure path.
+     * safeRetry=true means the failure happened before any kernel write, so a
+     * page reload cannot re-enter a modified kernel.
+     */
+    function fail(reason, allowRetry, nextTone) {
+        if (finished) return;
+        var touched = kernelTouched;
+        finished = true;
+        started = false;
+        window.__ohabTechHostStarted = false;
+        clearTimers();
+
+        var tone = nextTone || (touched ? "bad" : "warn");
+        setMessage("توقف: " + reason, tone);
+        logLine("FAIL", reason + " · stage=" + stage + " · kernelTouched=" + (touched ? "yes" : "no"), "bad");
+        for (var i = 0; i < STAGE_ORDER.length; i++) {
+            if (STAGE_ORDER.indexOf(stage) >= i) markStageEl(STAGE_ORDER[i], "done");
+        }
+        markStageEl(stage === "prep" ? "webkit" : stage, "fail");
+        sDel(LS, K_ACTIVE);
+
+        if (touched) {
+            // the console is in an unknown state: only a reboot is safe
+            if (reason.indexOf("did not load") >= 0 || reason.indexOf("payload") >= 0) {
+                setPhase("مرحلة النواة تمّت — الحل: أعد تشغيل الجهاز ثم أعد المحاولة", "bad");
+                setNotice("النواة تغيّرت بالفعل، لذلك لا يوجد أي إعادة محاولة تلقائية: أعد تشغيل الجهاز بالكامل، ثم افتح المتصفح من جديد وافتح الهوست.", "bad");
+            } else {
+                setPhase("فشل بعد لمس النواة — أعد تشغيل الجهاز قبل أي محاولة", "bad");
+                setNotice("لا تُعد تحميل الصفحة ولا تُشغّل الاستغلال مرة أخرى الآن. أعد تشغيل الجهاز (Power > Restart) ثم ابدأ من جديد.", "bad");
+            }
+            disableStart("أعد تشغيل الجهاز ثم أعد التحميل");
+            showReload();
+            return;
+        }
+
+        var n = attemptNo();
+        if (allowRetry && n < OPT.maxRetry) {
+            setAttempt(n + 1);
+            setPhase("إعادة محاولة آمنة " + (n + 1) + "/" + OPT.maxRetry + " — لم تُلمس النواة بعد", "warn");
+            setNotice("فشل في مرحلة ما قبل النواة. سيُعاد تحميل الصفحة تلقائيًا للمحاولة " + (n + 1) + " من " + OPT.maxRetry + ". أبقِ الصفحة مفتوحة.", "");
+            disableStart("إعادة محاولة تلقائية");
+            later(function () { try { location.reload(); } catch (e) {} }, 1800);
+            return;
+        }
+
+        setPhase("لا إعادة محاولة أخرى — راجع الخطوات", "bad");
+        if (n >= OPT.maxRetry && OPT.maxRetry > 0) {
+            setNotice("استُهلكت المحاولات الآمنة (" + OPT.maxRetry + "). الحل الأنجح: Close Application للمتصفح (أو أعد تشغيل الجهاز) ثم افتح الهوست من جديد.", "bad");
+        } else {
+            setNotice("لم يبدأ الاستغلال. راجع السجل، وتأكد من تحديث النظام المستهدف ومسار الهوست، وافتح الهوست من متصفح جديد.", "bad");
+        }
+        disableStart("توقف — راجع التعليمات");
+        showReload();
+    }
+
+    /* ---------------- watchdog (informative, never aborts) ---------------- */
+    var watchdogTimer = 0;
+    var stageStart = 0;
+    function restartWatchdog() {
+        if (watchdogTimer) clearTimeout(watchdogTimer);
+        stageStart = Date.now();
+        var stageAtStart = stage;
+        function tick() {
+            if (finished) return;
+            var secs = Math.round((Date.now() - stageStart) / 1000);
+            if (!started) return;
+            if (secs >= 240) {
+                setPhase("ما زلنا في مرحلة " + stageAtStart + " · " + secs + "ث — لا تعمل reload", "warn");
+                setNotice("إذا مرّت أكثر من 5 دقائق بلا أي تغيير على شاشة الجهاز فغالبًا الجهاز تجمّد: أطفئه يدويًا (زر الطاقة 12 ثانية) ثم ابدأ من جديد.", "bad");
+            } else if (secs >= 90) {
+                setPhase("مرحلة " + stageAtStart + " · " + secs + "ث — العمل جارٍ، لا تعمل reload", "warn");
+            }
+            watchdogTimer = setTimeout(tick, 5000);
+        }
+        watchdogTimer = setTimeout(tick, 5000);
+    }
+
+    /* ---------------- message polling (fallback for unhooked chains) ---------------- */
+    function pollMessages() {
+        return every(function () {
+            if (finished) return;
+            var text = msgs ? (msgs.textContent || "") : "";
+            if (/GoldHEN[^\n]*(Loaded|Ready)/i.test(text) && !/Already/i.test(text)) { onSuccess("DOM launch message"); return; }
+            if (/Already Loaded/i.test(text)) { onAlready("DOM message"); return; }
+            advanceStage(null, text.length > 200 ? text.slice(0, 200) : text);
+        }, 900);
+    }
+
+    /* ---------------- the launch ---------------- */
+    var plan = null;
+    var countdownActive = false;
+
+    function startExploit() {
+        if (started || finished || !plan) return;
+        countdownActive = false;
+        started = true;
+        window.__ohabTechHostStarted = true;
+        stage = "webkit";
+        stageTimes.webkit = Date.now();
+        kernelTouched = false;
+        setProgress(stageProgress.webkit);
+        paintStages();
+        setMessage("بدأ حقن سلسلة الاستغلال…", "warn");
+        setPhase("تحميل " + plan.src + " · لا تعمل reload", "warn");
+        logLine("stage", "webkit :: حقن " + plan.src, "ok");
+        setNotice("لا تلمس الصفحة الآن: لا reload، لا زر الرجوع، ولا تبويب آخر.", "");
+        logLine("RUN", "firmware=" + plan.fwText + " route=" + plan.kind + " src=" + plan.src + " exact=" + (plan.exact ? "yes" : "NO"), plan.exact ? null : "warn");
+        if (startButton) { startButton.disabled = true; startButton.textContent = "قيد التشغيل"; }
+        restartWatchdog();
+
+        var script = document.createElement("script");
+        script.src = plan.src;
+        if (plan.module) script.type = "module";
+        var loadTimer = later(function () {
+            fail("انتهت مهلة تحميل ملفات الاستغلال (30ث) — تحقق من وجود المجلد داخل الهوست", true, null);
+        }, 30000);
+        script.onerror = function () {
+            clearTimeout(loadTimer); removeTimer(loadTimer);
+            fail("تعذّر تحميل " + plan.src + " — الملف غير موجود أو الكاش قديم", true, null);
+        };
+        script.onload = function () {
+            clearTimeout(loadTimer); removeTimer(loadTimer);
+            logLine("RUN", "حُمّل " + plan.src, "ok");
+            if (plan.kind === "css" && typeof window.doJb === "function") {
+                later(function () {
+                    try {
+                        var res = window.doJb();
+                        if (res && typeof res["catch"] === "function") res["catch"](function () { onChainFailure("توقف CSS loader", "kernel"); });
+                    } catch (e) {
+                        onChainFailure("خطأ في CSS loader: " + ((e && e.message) || e), "webkit");
+                    }
+                }, 450);
+            } else if (plan.kind === "505") {
+                // 505/exploit.js schedules its own single exploit() call
+                logLine("RUN", "505 loader يتولى استدعاء exploit() بنفسه");
+            } else {
+                setPhase("تم تحميل الوحدة · بانتظار تقدّم السلسلة", "warn");
+            }
+        };
+        try { document.head.appendChild(script); } catch (e) {
+            fail("تعذّر حقن ملف الاستغلال", false, null);
+        }
+    }
+
+    function armCountdown(seconds) {
+        if (!OPT.autostart) {
+            if (startButton) { startButton.disabled = false; startButton.textContent = "تشغيل GoldHEN"; }
+            setPhase("جاهز — التشغيل التلقائي معطّل (?autostart=0)", "ok");
+            setNotice("اضغط «تشغيل GoldHEN» عند الجهوزية.", "");
+            return;
+        }
+        var left = seconds;
+        countdownActive = true;
+        if (startButton) { startButton.disabled = false; startButton.textContent = "تشغيل الآن"; }
+        setPhase("سيبدأ تلقائيًا بعد " + left + "ث — اضغط «تشغيل الآن» للبدء فورًا", "warn");
+        (function tick() {
+            if (finished || started || !countdownActive) return;
+            left--;
+            if (left <= 0) { startExploit(); return; }
+            setPhase("سيبدأ تلقائيًا بعد " + left + "ث — اضغط «تشغيل الآن» للبدء فورًا", "warn");
+            later(tick, 1000);
+        })();
+    }
+
+    /* ---------------- reset ---------------- */
+    function doReset() {
+        if (!window.confirm("Reset: سيتم مسح Offline Cache وكل علامات التشغيل (ExploitLoaded / عدّادات المحاولات). هل تريد المتابعة؟")) return;
+        try { if (cache && cache.status !== 0) { try { cache.swapCache(); } catch (e) {} } } catch (e) {}
+        try { if (cache && cache.update) cache.update(); } catch (e) {}
+        try { sDel(LS, "ExploitLoaded"); } catch (e) {}
+        try { sDel(SS, "ExploitLoaded"); } catch (e) {}
+        try { sDel(SS, "exploitChain"); } catch (e) {}
+        try { sDel(SS, K_SLOPKIT_RETRY); } catch (e) {}
+        try { sDel(SS, K_ATTEMPT); } catch (e) {}
+        try { sDel(SS, K_SWAPPED); } catch (e) {}
+        try { sDel(LS, K_ACTIVE); } catch (e) {}
+        try { LS.removeItem(K_RAN); } catch (e) {}
+        try { SS.removeItem(K_RAN); } catch (e) {}
+        logLine("RESET", "تم مسح العلامات — إعادة تحميل الهوست", "warn");
+        setMessage("تم الـ Reset", "warn");
+        later(function () { location.reload(); }, 900);
+    }
+
+    /* ---------------- boot ---------------- */
+    setText(msgs3, " · v" + HOST_VERSION);
+    if (reloadButton) reloadButton.onclick = function () { location.reload(); };
+    if (resetButton) resetButton.onclick = doReset;
+    if (startButton) startButton.onclick = function () {
+        if (!finished && !started) startExploit();
+    };
+    logLine("BOOT", "OhabTech Host Webkit " + HOST_VERSION + " · " + navigator.userAgent.slice(0, 120));
+
+    var ua = navigator.userAgent || "";
+    var fw = parseFw(ua);
+    var isPS4 = !!fw;
+
+    if (!isPS4) {
+        setText(firmwareEl, "هذا Host مخصص لـ PS4 فقط");
+        setMessage("افتح OhabTech Host Webkit من متصفح PS4.", "bad");
+        setPhase("Waiting for PS4 browser", "bad");
+        if (machineEl) machineEl.className = "machine unsupported";
+        setNotice("لا يمكن تشغيل الاستغلال من متصفح حاسوب. هذه الصفحة معروضة فقط للفحص.", "bad");
+        disableStart("ليس PS4");
+        return;
+    }
+
+    var picked = pickRoute(fw, OPT.route);
+    if (!picked) {
+        setText(firmwareEl, "Firmware " + fw.text + " · غير موجّه");
+        setMessage("هذا firmware غير موجّه في GoldHEN Multi.", "bad");
+        setPhase("لا يوجد مسار لهذا الإصدار · لم يبدأ أي استغلال", "bad");
+        if (machineEl) machineEl.className = "machine unsupported";
+        setNotice("هذا البناء يقبل فقط إصدارات Firmware الموجودة صراحةً في جدول المسارات؛ الإصدارات غير الموجودة في القائمة لن يبدأ لها الاستغلال.", "bad");
+        logLine("ROUTE", "unsupported firmware=" + fw.text, "bad");
+        disableStart("غير مدعوم");
+        return;
+    }
+
+    plan = picked.route;
+    plan.fwText = fw.text;
+    plan.exact = picked.exact;
+
+    setText(firmwareEl, "Firmware " + fw.text + " · " + plan.name + (plan.exact ? " · جدول مؤكد" : " · جدول غير مؤكد"));
+
+    (function highlightFw() {
+        var boxes = document.querySelectorAll(".fw");
+        for (var i = 0; i < boxes.length; i++) {
+            var t = String(boxes[i].textContent || "").replace(/\s+/g, " ");
+            if (t.indexOf(plan.name) === 0) { boxes[i].className = "fw here"; return; }
+        }
+    }());
+
+    logLine("ROUTE", "fw=" + fw.text + " → " + plan.name + " (" + plan.src + ") exact=" + (plan.exact ? "1" : "0"), plan.exact ? "ok" : "warn");
+
+    if (resumeMode()) {
+        logLine("RETRY", "استئناف بعد إعادة تحميل — محاولة " + attemptNo() + "/" + OPT.maxRetry, "warn");
+    }
+
+    if (otherTabAlive()) {
+        setMessage("تبويب آخر يشغّل الهوست بالفعل", "bad");
+        setPhase("أغلق التبويب الآخر ثم أعد تحميل هذه الصفحة", "bad");
+        setNotice("تشغيل سلسلة الاستغلال من تبويبين معًا من أشهر أسباب تجمّد الجهاز. أغلق التبويب الآخر أولًا.", "bad");
+        disableStart("تبويب آخر نشط");
+        return;
+    }
+
+    startHeartbeat();
+    setProgress(8);
+    setPhase("فحص مسبق للملفات المطلوبة...", "warn");
+    setMessage("OhabTech Host Webkit Final · فحص مسبق", "warn");
+
+    checkFiles(plan, function (err) {
+        if (err) {
+            fail("الفحص المسبق: " + err, false, "bad");
+            return;
+        }
+        preflight.ok = true;
+        logLine("preflight", "كل الملفات المطلوبة موجودة", "ok");
+        beginCache(function () {
+            if (finished) return;
+            var patchNote = preflight.patch ? " · patch=" + preflight.patch : "";
+            setCacheState(cacheVerdict === "network" || cacheVerdict.indexOf("cache-") === 0 ? "شبكة" : "جاهز");
+            setProgress(15);
+            setMessage("الفحص المسبق ناجح · GoldHEN payload " + preflight.payloadSize + " بايت", "ok");
+            setPhase("جاهز — فحص: " + cacheVerdict + patchNote, "ok");
+                    if (!plan.exact) {
+                fail("Firmware " + plan.fwText + " لا يملك جدول offsets صريحًا في هذه الحزمة؛ تم منع التشغيل لتفادي استخدام offsets غير مطابقة", false, "bad");
+                return;
+            }
+            pollMessages();
+            // the slopkit chains retry read-phase misses by reloading the page
+            // themselves; restart fast in that case instead of counting again
+            var slopRetry = parseInt(sGet(SS, K_SLOPKIT_RETRY) || "0", 10);
+            if (!slopRetry || isNaN(slopRetry)) slopRetry = 0;
+            if (slopRetry > 0) logLine("RETRY", "استئناف إعادة محاولة slopkit " + slopRetry + " (مرحلة القراءة فقط)", "warn");
+            armCountdown(slopRetry > 0 ? 1 : (resumeMode() ? 2 : 4));
+        });
+    });
+}());
+</script>
+</body>
+</html>

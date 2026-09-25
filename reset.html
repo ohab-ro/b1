@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OhabTech | Reset حالة الهوست</title>
+<style>
+body{background:#080b18;color:#edf3ff;font-family:"Segoe UI",Arial,sans-serif;text-align:center;padding:34px 14px;margin:0}
+.shell{max-width:720px;margin:0 auto}
+h1{font-size:24px;color:#fff;margin:8px 0}
+h2{font-size:15px;color:#8deaff;font-weight:600;margin:4px 0 18px}
+.line{background:rgba(12,20,40,.85);border:1px solid rgba(126,161,225,.22);border-radius:12px;padding:12px;margin:8px 0;font-size:14px;text-align:right}
+.ok{color:#7ef9c3}.warn{color:#ffd77d}.bad{color:#ff9eaa}
+.notice{background:rgba(66,48,16,.34);border:1px solid rgba(255,210,122,.32);border-radius:10px;padding:12px;color:#ffe3a1;font-size:13px;text-align:right;margin-top:14px}
+a.btn{display:inline-block;margin:14px 4px 0;padding:12px 18px;border-radius:11px;border:1px solid rgba(126,249,195,.62);background:#126b69;color:#f5fbff;font-weight:700;text-decoration:none}
+.footer{color:#7184a5;font-size:12px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <h1>OhabTech Host Webkit</h1>
+  <h2>أداة تنظيف حالة الهوست قبل المحاولة</h2>
+  <div id="log"></div>
+  <div class="notice">
+    هذه الصفحة تمسح Offline Cache وكل علامات التشغيل المحفوظة في متصفح PS4، وهي الحل
+    عندما يظهر <b>«GoldHEN is Already Loaded»</b> بدون أن يكون GoldHEN يعمل فعلًا،
+    أو عندما يبقى الهوست عالقًا على إصدار/كاش قديم.
+  </div>
+  <a class="btn" href="index.html">فتح الهوست بعد التنظيف</a>
+  <p class="footer">ملاحظة: بعد التنظيف، ابدأ التشغيل من متصفح مفتوح حديثًا للحصول على أفضل نتيجة.</p>
+</div>
+<script>
+(function () {
+  "use strict";
+  var log = document.getElementById("log");
+  function say(text, tone) {
+    var d = document.createElement("div");
+    d.className = "line" + (tone ? " " + tone : "");
+    d.textContent = text;
+    log.appendChild(d);
+  }
+  var cleared = 0;
+
+  // 1) AppCache
+  try {
+    var cache = window.applicationCache;
+    if (!cache) {
+      say("Offline Cache: هذا WebKit لا يوفّره", "warn");
+    } else {
+      try { cache.onupdateready = function () { try { cache.swapCache(); say("Offline Cache: أُعيد التنزيل", "ok"); } catch (e) {} }; } catch (e) {}
+      try { cache.update(); say("Offline Cache: بدأ التحديث (سيُستبدل بالمحتوى الحالي)", "ok"); }
+      catch (e) { say("Offline Cache: لم يبدأ التحديث", "warn"); }
+    }
+  } catch (e) { say("Offline Cache: خطأ " + e.message, "bad"); }
+
+  // 2) storage flags written by the chains and by the host shell
+  var keys = ["ExploitLoaded", "exploitChain", "jb1352-read-retry",
+              "ohab_v4_attempt", "ohab_v4_ran", "ohab_v4_active"];
+  for (var i = 0; i < keys.length; i++) {
+    try {
+      if (localStorage.getItem(keys[i]) !== null) { localStorage.removeItem(keys[i]); cleared++; }
+    } catch (e) {}
+    try {
+      if (sessionStorage.getItem(keys[i]) !== null) { sessionStorage.removeItem(keys[i]); cleared++; }
+    } catch (e) {}
+  }
+  say("علامات التشغيل: مُسحت " + cleared + " علامة", cleared ? "ok" : "warn");
+
+  // 3) last resort: wipe the whole origin storage (kept, because a stale
+  //    ExploitLoaded flag is the main cause of "GoldHEN does not activate")
+  try {
+    if (typeof localStorage.clear === "function") { localStorage.clear(); say("localStorage: مُسح بالكامل", "ok"); }
+    if (typeof sessionStorage.clear === "function") { sessionStorage.clear(); say("sessionStorage: مُسح بالكامل", "ok"); }
+  } catch (e) { say("تنظيف التخزين غير متاح على هذا WebKit", "warn"); }
+
+  say("تم. افتح الهوست الآن.", "ok");
+}());
+</script>
+</body>
+</html>
